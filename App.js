@@ -27,18 +27,13 @@ export default function App() {
   }, []);
 
   const fetchData = async () => {
-    try {
-      setIsLoading(true);
-      const fetchDBResult = await fetchDB();
-      setName(fetchDBResult.name);
-      setDate(fetchDBResult.date);
-      const imageUrl = await getStorageImageUrl();
-      setImage(imageUrl);
-    } catch (error) {
-      Alert.alert("fetchData Error", error);
-    } finally {
-      setIsLoading(false);
-    }
+    setIsLoading(true);
+    const fetchDBResult = await fetchDB();
+    setName(fetchDBResult.name);
+    setDate(fetchDBResult.date);
+    const imageUrl = await getStorageImageUrl();
+    setImage(imageUrl);
+    setIsLoading(false);
   };
 
   const takeAndUploadPhoto = async () => {
@@ -68,10 +63,15 @@ export default function App() {
   return (
     <View style={styles.container}>
       <View style={styles.topContainer}>
-        <Image source={{ uri: image }} style={styles.image} />
+        {image ? (
+          <Image source={{ uri: image }} style={styles.image} />
+        ) : (
+          <Text style={styles.text}>Image Loading...</Text>
+        )}
         <Text style={styles.text}>Date: {date}</Text>
         <Text style={styles.text}>Name: {name}</Text>
       </View>
+
       <View style={styles.bottomContainer}>
         <IconButton
           icon="camera-outline"

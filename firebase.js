@@ -16,24 +16,30 @@ export async function storeDB(name, date) {
     const id = response.data.name;
     return id;
   } catch (error) {
-    Alert.alert("storeDB Error", error);
+    Alert.alert("storeDB Error");
+    console.log(error);
     return "";
   }
 }
 
 export async function fetchDB() {
-  const result = {};
+  try {
+    const result = {};
 
-  const response = await axios.get(
-    DB_URL + `/date.json?orderBy="$key"&limitToLast=1`
-  );
+    const response = await axios.get(
+      DB_URL + `/date.json?orderBy="$key"&limitToLast=1`
+    );
 
-  for (const key in response.data) {
-    result.date = response.data[key].date;
-    result.name = response.data[key].name;
+    for (const key in response.data) {
+      result.date = response.data[key].date;
+      result.name = response.data[key].name;
+    }
+
+    return result;
+  } catch (error) {
+    Alert.alert("fetchDB error");
+    console.log(error);
   }
-
-  return result;
 }
 
 // Storage
@@ -66,6 +72,11 @@ export async function storeStorage(image) {
 }
 
 export async function getStorageImageUrl() {
-  const url = await getDownloadURL(storageRef);
-  return url;
+  try {
+    const url = await getDownloadURL(storageRef);
+    console.log(url);
+    return url;
+  } catch (error) {
+    console.log("getStorageImageUrl error", error);
+  }
 }
