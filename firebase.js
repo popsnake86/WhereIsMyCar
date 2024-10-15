@@ -54,29 +54,27 @@ const storageRef = ref(storage, `images/image.jpg`);
 export async function storeStorage(image) {
   if (!image) return;
 
-  try {
-    const response = await fetch(image.assets[0].uri);
-    const blob = await response.blob();
+  const response = await fetch(image.assets[0].uri);
+  const blob = await response.blob();
+  let result = false;
 
-    await uploadBytes(storageRef, blob)
-      .then(() => {
-        return true;
-      })
-      .catch((error) => {
-        Alert.alert("uploadBytes Error", error);
-        return false;
-      });
-  } catch (error) {
-    Alert.alert("getDownloadURL Error", error);
-  }
+  await uploadBytes(storageRef, blob)
+    .then(() => {
+      result = true;
+    })
+    .catch((error) => {
+      Alert.alert("uploadBytes Error");
+      result = false;
+    });
+
+  return result;
 }
 
 export async function getStorageImageUrl() {
   try {
     const url = await getDownloadURL(storageRef);
-    console.log(url);
     return url;
   } catch (error) {
-    console.log("getStorageImageUrl error", error);
+    Alert.alert("getStorageImageUrl error");
   }
 }

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -7,10 +7,10 @@ import {
   StyleSheet,
   Text,
   View,
+  AppState,
 } from "react-native";
 import * as Device from "expo-device";
-import { CameraType, launchCameraAsync } from "expo-image-picker";
-
+import * as ImagePicker from "expo-image-picker";
 import { fetchDB, getStorageImageUrl, storeDB, storeStorage } from "./firebase";
 import IconButton from "./components/UI/IconButton";
 
@@ -23,22 +23,47 @@ export default function App() {
   const [image, setImage] = useState(null);
 
   useEffect(() => {
-    fetchData();
+    const subscription = AppState.addEventListener(
+      "change",
+      handleAppStateChange
+    );
+
+    return () => {
+      subscription.remove();
+    };
   }, []);
 
+  const handleAppStateChange = (nextAppState) => {
+    if (nextAppState === "active") {
+      fetchData();
+    }
+  };
+
   const fetchData = async () => {
-    setIsLoading(true);
-    const fetchDBResult = await fetchDB();
-    setName(fetchDBResult.name);
-    setDate(fetchDBResult.date);
-    const imageUrl = await getStorageImageUrl();
-    setImage(imageUrl);
-    setIsLoading(false);
+    try {
+      setIsLoading(true);
+      const fetchDBResult = await fetchDB();
+      setName(fetchDBResult.name);
+      setDate(fetchDBResult.date);
+      const imageUrl = await getStorageImageUrl();
+      setImage(imageUrl);
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const takeAndUploadPhoto = async () => {
-    const image = await launchCameraAsync({
-      cameraType: CameraType.back,
+    const cameraPermission = await ImagePicker.requestCameraPermissionsAsync();
+
+    if (cameraPermission.status !== "granted") {
+      Alert.alert("Permission required", "Camera access is required");
+      return;
+    }
+
+    const image = await ImagePicker.launchCameraAsync({
+      cameraType: ImagePicker.CameraType.back,
     });
 
     if (image.assets != null) {
@@ -106,8 +131,3 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
 });
-
-// Build
-// android : eas build --platform android --profile preview
-// ios : eas build --platform ios --profile production
-// npm install -g eas-cli
